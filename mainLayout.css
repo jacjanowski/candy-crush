@@ -1,0 +1,65 @@
+
+#firstColumn, #lastColumn {
+  text-align: center;
+  margin: auto;
+  
+}
+
+#mainColumn {
+  padding: 10px 10px;
+}
+
+.controller{
+  text-align: center;
+  margin: auto;
+  
+}
+
+.table {
+  border: 2px solid rgb(0, 0, 0);
+  width:  320px;
+  height: 320px;
+  margin: auto;
+}
+
+td {
+  font-size: 15px;
+  text-align: center;
+  border: 1px solid black;
+}
+
+.row {
+  display: flex;
+}
+.btn-outline-warning {
+  background-color: black;
+  display: block;
+}
+#rightForm,#leftForm{
+  margin: 1em;
+  display: inline-block;
+}
+#upForm, #downForm {
+  margin: auto;
+}
+/* Your css code here! */
+@media (max-width: 768px){
+
+  #firstColumn {
+    margin-top: 1em;
+  }
+  #mainColumn{
+    margin: 2em;
+ 
+  }
+  #lastColumn{
+    width: 320px;
+    margin-bottom: 1em;
+  }
+  p,h1{
+    display: none;
+  }
+
+
+
+}

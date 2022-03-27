@@ -1,0 +1,290 @@
+<!--
+CandyCrush
+Your Name: Jacob Janowski
+Collaborators: I DID NOT DISCUSS THIS ASSIGNMENT WITH ANYONE ELSE.
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>CandyCrush</title>
+
+  <!-- Load style sheets -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css">
+
+  <link rel="stylesheet" href="mainLayout.css">
+
+  <!-- Use mobile-aware viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Load any supplemental Javascript libraries here -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.2/seedrandom.js">
+  </script>
+  <script src="candy.js"></script>
+  <script src="board.js"></script>
+  <script src="rules.js"></script>
+
+  <script>
+
+    // By default, the first board loaded by your page will be the same 
+    // each time you load (which is accomplished by "seeding" the random
+    // number generator. This makes testing (and grading!) easier!
+    Math.seedrandom(0);
+
+
+    // A short jQuery extension to read query parameters from the URL.
+    $.extend({
+      getUrlVars: function () {
+        var vars = [], pair;
+        var pairs = window.location.search.substr(1).split('&');
+        for (var i = 0; i < pairs.length; i++) {
+          pair = pairs[i].split('=');
+          vars.push(pair[0]);
+          vars[pair[0]] = pair[1] &&
+            decodeURIComponent(pair[1].replace(/\+/g, ' '));
+        }
+        return vars;
+      },
+      getUrlVar: function (name) {
+        return $.getUrlVars()[name];
+      }
+    });
+
+    // constants
+    var DEFAULT_BOARD_SIZE = 8;
+
+    // data model at global scope for easier debugging
+    var board;
+    var rules;
+
+    // initialize board
+    if ($.getUrlVar('size') && $.getUrlVar('size') >= 3) {
+      board = new Board($.getUrlVar('size'));
+    } else {
+      board = new Board(DEFAULT_BOARD_SIZE);
+    }
+
+    // load a rule
+    rules = new Rules(board);
+
+
+    $(document).ready(function () {
+
+      var tempCandy;
+      var gameBoard = document.getElementsByClassName("table");
+      var row_num = gameBoard[0].rows.length;
+      var col_num = gameBoard[0].rows[0].cells.length;
+      var row = gameBoard[0].insertRow(row_num);
+      var letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+      var entry = document.getElementsByClassName("playerMove");
+      entry[0].focus();
+
+      var i = 0;
+      while (i < 8) {
+        var row = gameBoard[0].insertRow(i);
+        for (j = 0; j < 8; j++) {
+          var cell = gameBoard[0].rows[i].insertCell(j);
+          cell.innerHTML = letterArray[j].concat(i + 1)
+
+        }
+        i++;
+      }
+
+      rules.prepareNewGame();
+
+      i = 0;
+      while (i < 8) {
+        for (j = 0; j < 8; j++) {
+          cell = gameBoard[0].rows[i].cells[j];
+          tempCandy = board.getCandyAt(i, j);
+          gameBoard[0].rows[i].cells[j].style.backgroundColor = tempCandy;
+          tempCandy != "yellow" ? cell.style.color = "white" : cell.style.color = "gray"; 
+        }
+        i++;
+      }
+
+
+
+    });
+
+
+ 
+    // move a candy on the board
+    $(board).on('move', function (e, info) {
+
+      var gameBoard = document.getElementsByClassName("table");
+      toCell = gameBoard[0].rows[info.toRow].cells[info.toCol];
+      toCell.style.backgroundColor = info.candy.color;
+      info.candy.color != "yellow" ? toCell.style.color = "white" : toCell.style.color = "gray";
+
+
+    });
+
+    // remove a candy from the board
+    $(board).on('remove', function (e, info) {
+
+      var gameBoard = document.getElementsByClassName("table");
+      var fromCell = gameBoard[0].rows[info.fromRow].cells[info.fromCol];
+      fromCell.style.backgroundColor = "white";
+    });
+
+ 
+    // // Button Events
+    $(document).on('click', "#newGame", function (evt) {
+      disableAll();
+      var entry = document.getElementsByClassName("playerMove");
+      entry[0].focus();
+      document.getElementById("userInput").value = "";
+      document.getElementById("userInput").disabled = false;
+
+      var tempCandy;
+      var gameBoard = document.getElementsByClassName("table");
+
+      board.clear();
+      rules.prepareNewGame();
+      for (i = 0; i < 8; i++) {
+        for (j = 0; j < 8; j++) {
+          cell = gameBoard[0].rows[i].cells[j];
+          tempCandy = board.getCandyAt(i, j);
+          gameBoard[0].rows[i].cells[j].style.backgroundColor = tempCandy;
+          tempCandy != "yellow" ? cell.style.color = "white" : cell.style.color = "gray";
+
+
+        }
+      }
+    });
+
+   
+    $(document).on('keydown', function (evt) {
+      let up = document.getElementById('up');
+      let down = document.getElementById('down');
+      let left = document.getElementById('left');
+      let right = document.getElementById('right');
+      let playerMove = document.getElementsByClassName('playerMove');
+      let crush = $('#crush');
+      let newGame = $('#newGame');
+      
+
+      if ((left.disabled &&
+        right.disabled &&
+        up.disabled &&
+        down.disabled) && (playerMove[0].disabled)) {
+
+        crush.focus();
+      }
+
+      switch (evt.which) {
+        case 37:
+          evt.preventDefault();
+          left.focus();
+          break;
+        case 38:
+          evt.preventDefault();
+          up.focus();
+          break;
+        case 39:
+          evt.preventDefault();
+          right.focus();
+          break;
+        case 40:
+          evt.preventDefault();
+          down.focus();
+          break;
+        case 78:
+          evt.preventDefault();
+          newGame.focus();
+          break;
+        default:
+          console.log('error in case switch')
+
+      }
+
+    });
+
+    function noSpacebar(evt) {
+      var evt = window.event || evt;
+      var key = evt.keyCode;
+      //space pressed
+      if (key == 32) { //space
+        evt.preventDefault();
+      }
+
+    }
+
+
+  </script>
+
+
+</head>
+
+<body style="background-color: plum;">
+
+  <div class="container">
+    <h1 style="color:firebrick; text-align: center;">Candy Crush: The Game That Crushes</h1>
+
+    <div class="row">
+      <div class="col-md-3" id="firstColumn">
+        <!-- Column 1 Code Here -->
+        <h2 style="color: mediumseagreen;"><b>Candy Crush</b></h2>
+        <form><input type="button" class="btn btn-info" value="New Game" id="newGame"></form>
+
+      </div>
+
+      <div class="col-md-6" id="mainColumn">
+
+        <!-- Column 2 Code Here -->
+
+        <table class="table" id="myTable">
+          <tr>
+
+          </tr>
+
+        </table>
+
+      </div>
+
+      <div class="col-md-3" id="lastColumn"
+        style="border: 2px solid; border-radius: 25px; background-color: burlywood;">
+
+        <!-- Column 3 Code Here -->
+
+
+
+        <b style="padding-right: 15px;"><label for="Move" style="font-size: larger;">Move: </label></b>
+        <input class="playerMove" type="text" id="userInput" name="Move" onkeydown="noSpacebar()" onkeyup="validMove()"
+          style="width: 50px; margin-top:10px">
+
+        <div class="controller">
+          <form id="upForm"><input type="button" class="btn btn-dark" id="up" value="↑" disabled></form>
+          <form id="leftForm"><input type="button" class="btn btn-dark" id="left" value="←" disabled></form>
+          <form id="rightForm"><input type="button" class="btn btn-dark" id="right" value="→" disabled></form>
+          <form id="downForm"><input type="button" class="btn btn-dark" id="down" value="↓" disabled></form>
+          <form><input style="margin: 10px;" type="button" class="btn btn-danger" id="crush" value="Crush Once"
+              disabled></form>
+        </div>
+
+
+      </div> <!-- class="row" -->
+    </div>
+
+    <p style="text-align: center;"><em> No spaces are allowed in input, as well as allowing capital/lowercase
+        letters.<br>
+        <span style="color: rgb(4, 0, 255);"> (1pt. extra credit) </span></em></p>
+    <p style="text-align: center;"><em>Keystrokes are enabled to play game. UP/DOWN/LEFT/RIGHT arrow keys are enabled
+        for movements. Also, allowing ENTER and SPACEBAR for confirming movement, AND 'N' for New Game. <br>
+        <span style="color: rgb(4, 0, 255);"> (1pt. extra credit) </span></em></p>
+    <p style="text-align: center;"><em>Resize the page to see that the board will take up the entire page! Margins are
+        'auto', centering the <code>div</code> tags for each column.<br>
+        <span style="color: rgb(4, 0, 255);"> (2pts. extra credit) </span></em></p>
+    <p style="text-align: center;"><em>Also, both the left and right padding of the middle column are both
+        10px.</em></p>
+  </div> <!-- class="container" -->
+
+
+  <!-- My javascript is in a file called 'model.js' -->
+  <script type="text/javascript" src="model.js"></script>
+</body>
+
+</html>
